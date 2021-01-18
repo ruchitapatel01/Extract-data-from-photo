@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> Extract Data from Photo </title>
+	<link rel="stylesheet" type="text/css" href="Extract-data-from-photo.css">
+</head>
+<body>
+
+	<h1 align="center">Extract Data from Photo</h1>
+	<div class="div-page">
+		<input style='display:none;' type="text" id="FileNameId" name="FileNameId">
+
+		<div class="div-form" id='uploadFileDiv'>
+			<form enctype="multipart/form-data" method="POST" name="formS3ObjManager" id="formS3ObjManagerId">
+                <input type="file" name="file" required />
+            </form>
+            <button class="UrlSignerBtn" id='ObjectUploadBtnId'><span>Upload File </span></button>
+		</div>
+
+		<button class="UrlSignerBtn" id="test" style='display:none;'><span>GET</span></button>
+		<div id="file_data" style="white-space: pre-line"></div>
+
+		<div class="div-obj-holder" style='display:none;' id="div-obj-holderId">
+			<div id="urlTextId" class="urlText">Url Text Goes here ...</div>
+			<div id="SignedUrlId" style='display:none;'></div>
+		</div>
+	</div>
+
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+	$(document).ready(function() {
+		$("#test").click(function() {
+			$.ajax({
+				url: 'https://yhk1b15ml1.execute-api.us-east-1.amazonaws.com/default/S3-Webpage-PrintData',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: {
+                    "key": $('#SignedUrlId').text().split('.')[0] + '.txt',
+                }, 
+                success: function(data) {
+                    $("#file_data").html(data);
+                    $("#div-obj-holderId").hide();
+                    console.log('success\n', data);
+                },
+			});
+		});
+	});
+
+	$(document).ready(function() {
+        $("#ObjectUploadBtnId").click(function() {
+            $.ajax({
+                url: 'https://jw0z1nvsm6.execute-api.us-east-1.amazonaws.com/url',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    "BucketName": "upload-photo",
+                    "methodType": "POST",
+                    "FileName": $('#FileNameId').val()
+                }, ),
+                dataType: "json",
+                //beforeSend: function(){ $( '#loader' ).show();},
+                success: function(res) {
+                    uploadFile(res, res.url);
+                },
+                error: function(e) {
+                    $("#urlTextId").html("Failed: Unable to Get Signed Upload Url" + " " + e.responseText);
+                    $("#SignedUrlId").html("");
+                    $("#div-obj-holderId").show();
+                },
+                complete: function() {
+                    $('#loader').hide();
+                }
+            });
+        });
+    });
+
+    $(document).ready(function() {
+        $('input[type="file"]').change(function(e) {
+            var fileName = e.target.files[0].name;
+            $('#FileNameId').val(fileName);
+        });
+    });
+
+    function uploadFile(s3Data, url) {
+        var formData = new FormData();
+        /*
+        All the PreSigned URL fields to FormData as required by Amazon S3
+        */
+        for (key in s3Data.fields) {
+            formData.append(key, s3Data.fields[key]);
+        };
+        /*
+        Attach the file to be uploaded to FormData
+        */
+        formData.append('file', $('input[type="file"]')[0].files[0]);
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(data, textStatus, request) {
+                if (request.status === 200 || request.status === 204) {
+                    $("#urlTextId").html("Status: Uploaded Successfully.<br /> ");
+                    $("#SignedUrlId").html(s3Data.fields.key);
+                    $("#ObjectUploadBtnId").hide();
+                    $("#test").show();
+                    console.log("Status:" + request.status);
+                    $("#div-obj-holderId").show();
+                } else {
+                    $("#urlTextId").html("Br!! Unable to upload Object. Try again!! <br />Status:" + request.status);
+                }
+            },
+        });
+
+    }
+
+</script>
+</html>

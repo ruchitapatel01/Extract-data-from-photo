@@ -15,16 +15,21 @@
                 <input type="file" name="file" required />
             </form>
             <button class="UrlSignerBtn" id='ObjectUploadBtnId'><span>Upload File </span></button>
+            <button class="UrlSignerBtn" id="test" style='display:none;'><span>GET</span></button>
 		</div>
 
-		<button class="UrlSignerBtn" id="test" style='display:none;'><span>GET</span></button>
-		<div id="file_data" style="white-space: pre-line"></div>
+        <div id="urlTextId" class="urlText" style="text-align: center;"></div>
+        <div id="SignedUrlId" style='display:none;'></div>
 
-		<div class="div-obj-holder" style='display:none;' id="div-obj-holderId">
-			<div id="urlTextId" class="urlText">Url Text Goes here ...</div>
-			<div id="SignedUrlId" style='display:none;'></div>
-		</div>
+		<!-- <div class="div-obj-holder" style='display:none;' id="div-obj-holderId">
+			
+		</div> -->
 	</div>
+
+    <div class="DataPrint" style='display:none;'>
+        <div id="image"></div>
+        <div id="file_data" style="white-space: pre-line"></div>
+    </div>
 
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -41,12 +46,40 @@
                 }, 
                 success: function(data) {
                     $("#file_data").html(data);
-                    $("#div-obj-holderId").hide();
+                    $(".DataPrint").show();
                     console.log('success\n', data);
                 },
 			});
 		});
 	});
+
+    $(document).ready(function() {
+        $("#test").click(function() {
+            $.ajax({
+                url: 'https://jw0z1nvsm6.execute-api.us-east-1.amazonaws.com/url',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    "BucketName": "upload-photo",
+                    "ObjectName": $('#SignedUrlId').text(),
+                    "methodType": "GET",
+                },  ),
+                dataType: "json",
+                success: function(res) {
+                    $("#image").html("<img src='" + res.PreSignedUrl + "'>").show();
+                    $(".DataPrint").show();
+                    $(".div-page").hide();
+                    // $('#test').hide();
+                    // $('#urlTextId').hide();
+                    // $("#SignedUrlId").hide();
+                    console.log('success\n', data);
+                },
+                error: function(e) {
+                    $("#image").html("Failed: Unable to Get Signed Upload Url" + " " + e.responseText);
+                },
+            });
+        });
+    });
 
 	$(document).ready(function() {
         $("#ObjectUploadBtnId").click(function() {
@@ -67,7 +100,6 @@
                 error: function(e) {
                     $("#urlTextId").html("Failed: Unable to Get Signed Upload Url" + " " + e.responseText);
                     $("#SignedUrlId").html("");
-                    $("#div-obj-holderId").show();
                 },
                 complete: function() {
                     $('#loader').hide();
@@ -107,10 +139,10 @@
                 if (request.status === 200 || request.status === 204) {
                     $("#urlTextId").html("Status: Uploaded Successfully.<br /> ");
                     $("#SignedUrlId").html(s3Data.fields.key);
+                    $("#SignedUrlId").hide();
                     $("#ObjectUploadBtnId").hide();
                     $("#test").show();
                     console.log("Status:" + request.status);
-                    $("#div-obj-holderId").show();
                 } else {
                     $("#urlTextId").html("Br!! Unable to upload Object. Try again!! <br />Status:" + request.status);
                 }

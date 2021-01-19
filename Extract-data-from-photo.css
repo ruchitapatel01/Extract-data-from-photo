@@ -6,9 +6,9 @@ body {
 .div-page {
     border-radius: 5px;
     background-color: #f2f2f2;
-    width: 40%;
+    width: 50%;
     margin: auto;
-    padding: 10px;
+    padding: 20px;
     text-align: left;
 }
 
@@ -24,13 +24,13 @@ body {
 }
     
 .UrlSignerBtn {
-    width: 100%;
+    width: 80%;
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
     margin: 25px 0;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
 }
 
@@ -38,22 +38,43 @@ body {
     overflow-x: hidden;
     /*float: left;*/
     font-size: medium;
-    font-style: italic;
+    /*font-style: italic;*/
     text-align: center;
     /*white-space: nowrap;*/
     width: 100%;
-    margin: 10px 0;
+    /*margin: 10px 0;*/
 }
     
 .urlText:hover {
     overflow-x: auto;
 }
 
-.div-obj-holder {
+#image {
+    float: right;
+    padding-right: 70px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    
+}
+
+#file_data {
+    clear: left;
+    padding-left: 70px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.DataPrint {
     border-radius: 5px;
     background-color: #f2f2f2;
-    width: 40%;
+    width: 90%;
     margin: auto;
-    padding: 10px;
-    height: 200px;
+    padding: auto;
+    text-align: left;
+}
+
+.DataPrint::after {
+  content: "";
+  clear: both;
+  display: table;
 }
